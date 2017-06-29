@@ -25,9 +25,11 @@ void handle_output_frame(struct output_state *output, struct timespec *ts) {
 	struct sample_state *sample = state->data;
 	struct wlr_output *wlr_output = output->output;
 
+	wlr_output_make_current(wlr_output);
 	wlr_renderer_begin(sample->renderer, wlr_output);
 	// TODO: render surfaces
 	wlr_renderer_end(sample->renderer);
+	wlr_output_swap_buffers(wlr_output);
 }
 
 int main() {
