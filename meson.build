@@ -1,3 +1,43 @@
+project(
+	'wlr-clients',
+	'c',
+	license: 'MIT',
+	meson_version: '>=0.59.0',
+	default_options: [
+		'c_std=c11',
+		'warning_level=2',
+		'werror=true',
+	],
+)
+
+cc = meson.get_compiler('c')
+
+add_project_arguments(cc.get_supported_arguments([
+	'-Wundef',
+	'-Wlogical-op',
+	'-Wmissing-include-dirs',
+	'-Wold-style-definition',
+	'-Wpointer-arith',
+	'-Winit-self',
+	'-Wstrict-prototypes',
+	'-Wimplicit-fallthrough=2',
+	'-Wendif-labels',
+	'-Wstrict-aliasing=2',
+	'-Woverflow',
+	'-Wmissing-prototypes',
+	'-Walloca',
+
+	'-Wno-missing-braces',
+	'-Wno-missing-field-initializers',
+	'-Wno-unused-parameter',
+]), language: 'c')
+
+subdir('protocol')
+
+math = cc.find_library('m')
+rt = cc.find_library('rt')
+drm = dependency('libdrm')
+xkbcommon = dependency('xkbcommon')
 threads = dependency('threads')
 wayland_egl = dependency('wayland-egl')
 wayland_cursor = dependency('wayland-cursor')
@@ -11,8 +51,6 @@ cairo = dependency('cairo', required: false, disabler: true)
 libavutil = dependency('libavutil', version: '>=56.14.100', required: false, disabler: true)
 libavcodec = dependency('libavcodec', version: '>=58.18.100', required: false, disabler: true)
 libavformat = dependency('libavformat', version: '>=58.12.100', required: false, disabler: true)
-# Only needed for drm_fourcc.h
-libdrm = dependency('libdrm').partial_dependency(compile_args: true, includes: true)
 
 # epoll is a separate library in FreeBSD
 if host_machine.system() == 'freebsd'
@@ -24,45 +62,6 @@ endif
 if not cc.has_header('libavutil/hwcontext_drm.h', dependencies: libavutil)
 	libavutil = disabler()
 endif
-
-compositors = {
-	'simple': {
-		'src': 'simple.c',
-	},
-	'pointer': {
-		'src': 'pointer.c',
-	},
-	'touch': {
-		'src': ['touch.c', 'cat.c'],
-	},
-	'tablet': {
-		'src': 'tablet.c',
-	},
-	'rotation': {
-		'src': ['rotation.c', 'cat.c'],
-	},
-	'output-layout': {
-		'src': ['output-layout.c', 'cat.c'],
-	},
-	'fullscreen-shell': {
-		'src': 'fullscreen-shell.c',
-		'proto': ['fullscreen-shell-unstable-v1'],
-	},
-	'scene-graph': {
-		'src': 'scene-graph.c',
-		'proto': ['xdg-shell'],
-	},
-	'output-layers': {
-		'src': 'output-layers.c',
-		'proto': [
-			'xdg-shell',
-		],
-	},
-	'cairo-buffer': {
-		'src': 'cairo-buffer.c',
-		'dep': cairo,
-	},
-}
 
 clients = {
 	'idle': {
@@ -195,20 +194,6 @@ clients = {
 	},
 }
 
-foreach name, info : compositors
-	extra_src = []
-	foreach p : info.get('proto', [])
-		extra_src += protocols_server_header[p]
-	endforeach
-
-	executable(
-		name,
-		[info.get('src'), extra_src],
-		dependencies: [wlroots, libdrm, info.get('dep', [])],
-		build_by_default: get_option('examples'),
-	)
-endforeach
-
 foreach name, info : clients
 	extra_src = []
 	foreach p : info.get('proto')
@@ -220,6 +205,5 @@ foreach name, info : clients
 		name,
 		[info.get('src'), extra_src],
 		dependencies: [wayland_client, info.get('dep', [])],
-		build_by_default: get_option('examples'),
 	)
 endforeach
