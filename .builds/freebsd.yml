@@ -1,0 +1,20 @@
+image: freebsd/latest
+packages:
+  - devel/evdev-proto
+  - devel/libepoll-shim
+  - devel/meson # implies ninja
+  - devel/pkgconf
+  - graphics/libdrm
+  - graphics/mesa-libs
+  - graphics/png
+  - graphics/wayland
+  - graphics/wayland-protocols
+  - multimedia/ffmpeg
+  - x11/libxkbcommon
+sources:
+  - https://gitlab.freedesktop.org/wlroots/wlr-clients.git
+tasks:
+  - wlroots: |
+      cd wlr-clients
+      meson setup build --fatal-meson-warnings -Dauto_features=enabled
+      ninja -C build

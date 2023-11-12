@@ -1,0 +1,22 @@
+image: archlinux
+packages:
+  - clang
+  - ffmpeg
+  - libxkbcommon
+  - mesa
+  - meson
+  - wayland
+  - wayland-protocols
+sources:
+  - https://gitlab.freedesktop.org/wlroots/wlr-clients.git
+tasks:
+  - setup: |
+      cd wlr-clients
+      CC=gcc meson setup build-gcc --fatal-meson-warnings -Dauto_features=enabled
+      CC=clang meson setup build-clang --fatal-meson-warnings -Dauto_features=enabled
+  - gcc: |
+      cd wlr-clients/build-gcc
+      ninja
+  - clang: |
+      cd wlr-clients/build-clang
+      ninja

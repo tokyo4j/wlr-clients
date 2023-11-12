@@ -1,0 +1,17 @@
+image: alpine/edge
+packages:
+  - ffmpeg-dev
+  - libxkbcommon-dev
+  - mesa-dev
+  - meson
+  - wayland-dev
+  - wayland-protocols
+sources:
+  - https://gitlab.freedesktop.org/wlroots/wlr-clients.git
+tasks:
+  - setup: |
+      cd wlr-clients
+      meson setup build --fatal-meson-warnings -Dauto_features=enabled
+  - build: |
+      cd wlr-clients
+      ninja -C build
