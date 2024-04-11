@@ -41,7 +41,7 @@ struct wlr_egl_surface *popup_egl_surface;
 struct wl_callback *popup_frame_callback;
 float popup_alpha = 1.0, popup_red = 0.5f;
 
-static uint32_t layer = ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND;
+static uint32_t layer = ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY;
 static uint32_t anchor = 0;
 static uint32_t width = 256, height = 256;
 static int32_t margin_top = 0;
@@ -634,6 +634,10 @@ int main(int argc, char **argv) {
 
 	wl_surface = wl_compositor_create_surface(compositor);
 	assert(wl_surface);
+
+	struct wl_region *region = wl_compositor_create_region(compositor);
+	wl_region_add(region, 0, 0, 0, 0);
+	wl_surface_set_input_region(wl_surface, region);
 
 	layer_surface = zwlr_layer_shell_v1_get_layer_surface(layer_shell,
 				wl_surface, wl_output, layer, namespace);
